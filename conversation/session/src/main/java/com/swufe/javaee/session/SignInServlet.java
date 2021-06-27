@@ -1,39 +1,53 @@
 package com.swufe.javaee.session;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
-import javax.servlet.annotation.*;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import com.example.HW3.User.UserCheck;
+import com.example.HW3.User.UserManagement;
+import com.example.HW3.model.User;
 
-@WebServlet(name = "SignInServlet", value = "/sign-in")
-public class SignInServlet extends HttpServlet {
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.io.IOException;
+
+@WebServlet(name = "LoginServlet", value = "/login")
+public class LoginServlet extends HttpServlet {
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        request.getRequestDispatcher("sign-in.html").forward(request, response);
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String name = req.getParameter("inputName");
-        String password = req.getParameter("inputPassword");
-        Map<String, String> map = new HashMap<>();
-        map.put("Henry", "Shi760118");
-        map.put("John", "020304");
-        if (map.containsKey(name)) {
-            String pwd = map.get(name);
-            if (pwd.equals(password)) {
-                req.getSession().setAttribute("user", name);
-                resp.sendRedirect("index");
-            }
-            else {
-                resp.sendRedirect("wrong.html");
-            }
+        HttpSession session = request.getSession();
+        String log = (String) session.getAttribute("admin");
+        String userlog= (String) session.getAttribute("username");
+        if (log != null && log.equals("log")) {
+            request.getRequestDispatcher("admin").forward(request, response);
+        }
+        else if(userlog!=null){
+            response.sendRedirect("user");
         }
         else {
-            resp.sendRedirect("wrong.html");
+            response.sendRedirect("Login.jsp");
+            return;
         }
+    }
 
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String username= request.getParameter("user").trim();
+        String password = request.getParameter("pwd").trim();
+
+//        if(UserCheck.checkUserLogin(username,password)){
+            User user=UserManagement.getUserByName(username);
+            int id=user.getId();
+            request.getSession().setAttribute("username", username);
+            request.getSession().setAttribute("id", id);
+            response.sendRedirect("user");
+//        }
+//        else {
+//            response.sendRedirect("login-error.jsp");
+//        }
+//        return;
     }
 }
